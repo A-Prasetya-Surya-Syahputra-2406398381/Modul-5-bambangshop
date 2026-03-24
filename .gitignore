@@ -10,3 +10,7 @@
 /httpRequests/
 .idea/
 ../.idea
+.env
+target/
+/target/
+**/*.rs.bk
