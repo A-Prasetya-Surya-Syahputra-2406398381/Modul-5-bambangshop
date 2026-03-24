@@ -48,15 +48,15 @@ You can install Postman via this website: https://www.postman.com/downloads/
     (You might want to use `cargo check` if you only need to verify your work without running the app.)
 
 ## Mandatory Checklists (Publisher)
--   [ ] Clone https://gitlab.com/ichlaffterlalu/bambangshop to a new repository.
+-   [x] Clone https://gitlab.com/ichlaffterlalu/bambangshop to a new repository.
 -   **STAGE 1: Implement models and repositories**
-    -   [ ] Commit: `Create Subscriber model struct.`
-    -   [ ] Commit: `Create Notification model struct.`
-    -   [ ] Commit: `Create Subscriber database and Subscriber repository struct skeleton.`
-    -   [ ] Commit: `Implement add function in Subscriber repository.`
-    -   [ ] Commit: `Implement list_all function in Subscriber repository.`
-    -   [ ] Commit: `Implement delete function in Subscriber repository.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-1" questions in this README.
+    -   [x] Commit: `Create Subscriber model struct.`
+    -   [x] Commit: `Create Notification model struct.`
+    -   [x] Commit: `Create Subscriber database and Subscriber repository struct skeleton.`
+    -   [x] Commit: `Implement add function in Subscriber repository.`
+    -   [x] Commit: `Implement list_all function in Subscriber repository.`
+    -   [x] Commit: `Implement delete function in Subscriber repository.`
+    -   [x] Write answers of your learning module's "Reflection Publisher-1" questions in this README.
 -   **STAGE 2: Implement services and controllers**
     -   [ ] Commit: `Create Notification service struct skeleton.`
     -   [ ] Commit: `Implement subscribe function in Notification service.`
@@ -77,6 +77,18 @@ This is the place for you to write reflections:
 ### Mandatory (Publisher) Reflections
 
 #### Reflection Publisher-1
+###### 1. In the Observer pattern diagram explained by the Head First Design Pattern book, Subscriber is defined as an interface. Explain based on your understanding of Observer design patterns, do we still need an interface (or trait in Rust) in this BambangShop case, or a single Model struct is enough?
+- A single model struct is enough because the publisher does exactly one uniform thing for every subscriber: it sends an HTTP POST request to a URL. Because the data required for this action is always exactly the same (a url and a name), a single struct containing those fields is sufficient. We would only need a trait if our Rocket app had to handle completely different types of internal subscribers doing different local tasks.
+
+###### 2. id in Program and url in Subscriber is intended to be unique. Explain based on your understanding, is using Vec (list) sufficient or using DashMap (map/dictionary) like we currently use is necessary for this case
+- Because it is necessary for performance and integrity, for example, the perfomance of delete will be faster using Map because the app can instantly jump to that specific URL and removes it (O(1) time complexity). On the contrary, in a `Vec` it has to check every single item one by one until it finds a match (O(n) complexity). 
+
+###### When programming using Rust, we are enforced by rigorous compiler constraints to make a thread-safe program. In the case of the List of Subscribers (SUBSCRIBERS) static variable, we used the DashMap external library for thread safe HashMap. Explain based on your understanding of design patterns, do we still need DashMap or, we can implement Singleton pattern instead?
+Yes, we need `DashMap` because the Singleton pattern and `DashMap` solve two completely different problem. 
+- Singleton ensures that there is exactly one database instance shared across the entire application. It prevents the app from accidentally creating a blank subscriber list every time a new request comes in.
+
+
+- Meanwhile `DashMap` provides internal locks so that multiple threads can safely interact with that single, shared instance without crashing. Because rocket is a multithreaded web framework, this means multiple HTTP request are processed at the same time. If the Singleton was a regular `HashMap` and two threads tried to write to it simultaneously, race condition may occur which Rust strictly forbid.
 
 #### Reflection Publisher-2
 
