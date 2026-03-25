@@ -65,11 +65,11 @@ You can install Postman via this website: https://www.postman.com/downloads/
     -   [x] Commit: `Implement unsubscribe function in Notification controller.`
     -   [x] Write answers of your learning module's "Reflection Publisher-2" questions in this README.
 -   **STAGE 3: Implement notification mechanism**
-    -   [ ] Commit: `Implement update method in Subscriber model to send notification HTTP requests.`
-    -   [ ] Commit: `Implement notify function in Notification service to notify each Subscriber.`
-    -   [ ] Commit: `Implement publish function in Program service and Program controller.`
-    -   [ ] Commit: `Edit Product service methods to call notify after create/delete.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-3" questions in this README.
+    -   [x] Commit: `Implement update method in Subscriber model to send notification HTTP requests.`
+    -   [x] Commit: `Implement notify function in Notification service to notify each Subscriber.`
+    -   [x] Commit: `Implement publish function in Program service and Program controller.`
+    -   [x] Commit: `Edit Product service methods to call notify after create/delete.`
+    -   [x] Write answers of your learning module's "Reflection Publisher-3" questions in this README.
 
 ## Your Reflections
 This is the place for you to write reflections:
@@ -114,3 +114,31 @@ The `Product` model suddenly has to import network libraries, database libraries
 I can definitely see myself in the future using the API Collection Documentation
 
 #### Reflection Publisher-3
+
+###### 1. Observer Pattern has two variations: Push model (publisher pushes data to subscribers) and Pull model (subscribers pull data from publisher). In this tutorial case, which variation of Observer Pattern that we use?
+We use `Push model`, because when a product is created or deleted the Publisher immediately constructs a `Notification` payload and executes `subscriber_clone.update(payload_clone)`. The publisher is actively packaging the data and "pushing" it directly to the subscribers' URLs over HTTP. The subscriber doesn't have to ask for data, it is handed to them as soon as the event happens.  
+
+###### 2. What are the advantages and disadvantages of using the other variation of Observer Pattern for this tutorial case? (example: if you answer Q1 with Push, then imagine if we used Pull
+Disadvantages of Pull in this case:
+
+- Wasted resources / Network Spam: the receiver would have to send request every few seconds to check for updates. 99% of the time the answer would be "No". Which wastes network bandwidth.
+- Latency: if the receiver checks every 5 minutes, and a product is created/deleted one second after a check, then the receiver won't find out about it for another 4 minutes 59 seconds.
+
+Advantages of Pull in this case:
+
+- Less published responsibility: the publisher doesn't need to keep a `SUBSCRIBER` database or manage HTTP requests to lots of external URLs.
+- Subscriber pacing: the receiver can only pull data only when it has the resources e.g. CPU/memory to handle it.
+
+###### 3. Explain what will happen to the program if we decide to not use multi-threading in the notification process.
+
+This is what would happen to the program without multi-threading:
+
+- When a user creates a product via API, the notify loop starts.
+
+- The loop sends an HTTP POST request to Subscriber 1. The entire Publisher server stops and waits for Subscriber 1 to receive it and send back an "OK" response.
+
+- If Subscriber 1's server is offline or lagging (e.g., takes 10 seconds to timeout), the Publisher is stuck waiting.
+
+- Only after finishing with Subscriber 1 will it move to Subscriber 2, and so on.
+
+- The original user who clicked "Create Product" will be stuck staring at a loading screen for a massive amount of time because the HTTP response won't return until every single subscriber has been notified sequentially.
