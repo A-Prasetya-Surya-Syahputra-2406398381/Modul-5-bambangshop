@@ -58,12 +58,12 @@ You can install Postman via this website: https://www.postman.com/downloads/
     -   [x] Commit: `Implement delete function in Subscriber repository.`
     -   [x] Write answers of your learning module's "Reflection Publisher-1" questions in this README.
 -   **STAGE 2: Implement services and controllers**
-    -   [ ] Commit: `Create Notification service struct skeleton.`
-    -   [ ] Commit: `Implement subscribe function in Notification service.`
-    -   [ ] Commit: `Implement subscribe function in Notification controller.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification service.`
-    -   [ ] Commit: `Implement unsubscribe function in Notification controller.`
-    -   [ ] Write answers of your learning module's "Reflection Publisher-2" questions in this README.
+    -   [x] Commit: `Create Notification service struct skeleton.`
+    -   [x] Commit: `Implement subscribe function in Notification service.`
+    -   [x] Commit: `Implement subscribe function in Notification controller.`
+    -   [x] Commit: `Implement unsubscribe function in Notification service.`
+    -   [x] Commit: `Implement unsubscribe function in Notification controller.`
+    -   [x] Write answers of your learning module's "Reflection Publisher-2" questions in this README.
 -   **STAGE 3: Implement notification mechanism**
     -   [ ] Commit: `Implement update method in Subscriber model to send notification HTTP requests.`
     -   [ ] Commit: `Implement notify function in Notification service to notify each Subscriber.`
@@ -83,7 +83,7 @@ This is the place for you to write reflections:
 ###### 2. id in Program and url in Subscriber is intended to be unique. Explain based on your understanding, is using Vec (list) sufficient or using DashMap (map/dictionary) like we currently use is necessary for this case
 - Because it is necessary for performance and integrity, for example, the perfomance of delete will be faster using Map because the app can instantly jump to that specific URL and removes it (O(1) time complexity). On the contrary, in a `Vec` it has to check every single item one by one until it finds a match (O(n) complexity). 
 
-###### When programming using Rust, we are enforced by rigorous compiler constraints to make a thread-safe program. In the case of the List of Subscribers (SUBSCRIBERS) static variable, we used the DashMap external library for thread safe HashMap. Explain based on your understanding of design patterns, do we still need DashMap or, we can implement Singleton pattern instead?
+###### 3. When programming using Rust, we are enforced by rigorous compiler constraints to make a thread-safe program. In the case of the List of Subscribers (SUBSCRIBERS) static variable, we used the DashMap external library for thread safe HashMap. Explain based on your understanding of design patterns, do we still need DashMap or, we can implement Singleton pattern instead?
 Yes, we need `DashMap` because the Singleton pattern and `DashMap` solve two completely different problem. 
 - Singleton ensures that there is exactly one database instance shared across the entire application. It prevents the app from accidentally creating a blank subscriber list every time a new request comes in.
 
@@ -91,5 +91,26 @@ Yes, we need `DashMap` because the Singleton pattern and `DashMap` solve two com
 - Meanwhile `DashMap` provides internal locks so that multiple threads can safely interact with that single, shared instance without crashing. Because rocket is a multithreaded web framework, this means multiple HTTP request are processed at the same time. If the Singleton was a regular `HashMap` and two threads tried to write to it simultaneously, race condition may occur which Rust strictly forbid.
 
 #### Reflection Publisher-2
+
+###### 1. In the Model-View Controller (MVC) compound pattern, there is no “Service” and “Repository”. Model in MVC covers both data storage and business logic. Explain based on your understanding of design principles, why we need to separate “Service” and “Repository” from a Model?
+Because we want to apply one of the most important rules in software engineering: Single Responsibility Principle. By separating them, we create a layered architecture which consist of:
+
+- Model: acts as a simple data container or blueprint. It doesn't know how it gets saved or what business rules apply to it.
+- Repository: Strictly handle database logic. It's only job is to CRUD records. It doesn't care about business rules.
+- Service: Strictly handle the business logic. It tells the repository to fetch data, apply some rule, and hand it back to controller.
+
+This makes the code easier to maintain and to test
+
+###### 2. What happens if we only use the Model? Explain your imagination on how the interactions between each model (Program, Subscriber, Notification) affect the code complexity for each model?
+There will be high coupling because for example when we create a `Product` that handles all the logic. Then it has to save itself to the DB, Look up to `Subscriber` DB to find who wants to know about it, createes a Notification Object, and finally executes an HTTP network request to send that notification.
+
+The `Product` model suddenly has to import network libraries, database libraries, and know the  details of how Subscriber and Notification work. If we change how a notification is formatted, we have to open and modify the Product file. Testing becomes more complex because we can't just test the product creation without triggering real network requests.
+
+###### 3. Have you explored more about Postman? Tell us how this tool helps you to test your current work. You might want to also list which features in Postman you are interested in or feel like it is helpful to help your Group Project or any of your future software engineering projects.
+
+1. Testing current work: it allows us to simulate the exact HTTP request the frontend will eventually take, verifying that the endpoints will return the correct JSON without needing a complete frontend.
+2. API Documentation: it creates an interactive web based documentation which helps people reading the document understand how to interact with the system
+
+I can definitely see myself in the future using the API Collection Documentation
 
 #### Reflection Publisher-3
